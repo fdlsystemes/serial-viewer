@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  serial-viewer:
+    build: .
+    container_name: serial-viewer
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.serial-viewer.rule=Host(`serial-viewer.fdlsystemes.com`)"
+      - "traefik.http.routers.serial-viewer.entrypoints=websecure"
+      - "traefik.http.routers.serial-viewer.tls.certresolver=letsencrypt"
+
+networks:
+  web:
+    external: true
