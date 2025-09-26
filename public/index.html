@@ -15,24 +15,16 @@
   <pre id="output"></pre>
 
   <script>
-    const ws = new WebSocket("wss://serial-stream.fdlsystemes.com"); // domaine de ton WSS
+    const ws = new WebSocket("wss://serial-stream.fdlsystemes.com");
     const output = document.getElementById("output");
 
-    ws.onopen = () => {
-      output.textContent += "[OK] Connecté au serveur WebSocket\n";
-    };
-
+    ws.onopen = () => output.textContent += "[OK] Connecté au serveur WebSocket\n";
     ws.onmessage = (event) => {
       output.textContent += event.data;
       output.scrollTop = output.scrollHeight;
     };
-
-    ws.onerror = (err) => {
-      output.textContent += `[Erreur] ${err.message || 'inconnue'}\n`;
-    };
-
-    ws.onclose = () => {
-      output.textContent += "[Déconnecté]\n";
-    };
+    ws.onerror = (err) => output.textContent += `[Erreur] ${err.message || 'inconnue'}\n`;
+    ws.onclose = () => output.textContent += "[Déconnecté]\n";
   </script>
 </body>
+</html>
