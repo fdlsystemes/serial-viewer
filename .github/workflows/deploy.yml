@@ -28,6 +28,7 @@ jobs:
           ssh -p ${{ secrets.NAS_SSH_PORT }} ${{ secrets.NAS_USER }}@${{ secrets.NAS_HOST }} "
             set -e
             cd /volume1/docker/serial-viewer &&
+            mkdir -p public &&
             version=\$(git log -1 --date=short --format='%cd' 2>/dev/null || date +%F) &&
             echo "Version: \$version" &&
             echo \$version > public/version.txt &&
@@ -35,8 +36,6 @@ jobs:
             git fetch origin &&
             git reset --hard origin/main &&
             git clean -fd &&
-            mkdir -p public &&
-            echo '$version' > public/version.txt &&
             /usr/local/bin/docker-compose build &&
             /usr/local/bin/docker-compose up -d
           "
