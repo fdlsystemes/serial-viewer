@@ -29,6 +29,7 @@ jobs:
             set -e
             cd /volume1/docker/serial-viewer &&
             version=\$(git log -1 --date=short --format='%cd' 2>/dev/null || date +%F) &&
+            echo "Version: \$version" &&
             echo \$version > public/version.txt &&
             git config --global --add safe.directory /volume1/docker/serial-viewer &&
             git fetch origin &&
