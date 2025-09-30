@@ -1,5 +1,5 @@
 name: Deploy serial-viewer
-
+  
 on:
   push:
     branches:
