@@ -30,15 +30,11 @@ jobs:
           echo "$version" > serial-viewer/public/version.txt
           echo "Version générée: $version"
 
-      - name: Sync files to NAS
-        run: |
-          rsync -avz --delete -e "ssh -p ${{ secrets.NAS_SSH_PORT }}" serial-viewer/ \
-            ${{ secrets.NAS_USER }}@${{ secrets.NAS_HOST }}:/volume1/docker/serial-viewer/
-
       - name: Rebuild & Restart serial-viewer container
         run: |
           ssh -p ${{ secrets.NAS_SSH_PORT }} ${{ secrets.NAS_USER }}@${{ secrets.NAS_HOST }} "
             cd /volume1/docker/serial-viewer &&
+            git pull origin main &&
             /usr/local/bin/docker-compose build &&
             /usr/local/bin/docker-compose up -d
           "
