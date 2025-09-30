@@ -25,6 +25,7 @@ jobs:
 
       - name: Generate version.txt
         run: |
+          mkdir -p serial-viewer/public
           version=$(git log -1 --date=short --format="%cd")
           echo "$version" > serial-viewer/public/version.txt
           echo "Version générée: $version"
