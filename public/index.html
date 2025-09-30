@@ -7,20 +7,25 @@
   <style>
     body { font-family: monospace; background: #f9f9f9; padding: 20px; }
     h1 { font-size: 1.2em; }
+    #siteNameDisplay { font-weight: bold; margin-bottom: 10px; }
     #output { background: #eee; padding: 10px; border-radius: 5px; height: 400px; overflow-y: auto; }
     footer { text-align:center; font-size:0.8em; color:#666; margin-top:20px; }
   </style>
 </head>
 <body>
   <h1>Flux série en temps réel</h1>
-  
-  <!-- Formulaire choix site -->
+
+  <!-- Sélecteur de site -->
   <div id="site-form">
     <label for="siteName">Nom du site :</label>
     <input type="text" id="siteName" placeholder="ex: site-A" required />
     <button id="start">Afficher</button>
   </div>
 
+  <!-- Affichage du site sélectionné -->
+  <div id="siteNameDisplay" style="display:none;"></div>
+
+  <!-- Sortie des trames -->
   <pre id="output" style="display:none;"></pre>
 
   <footer id="version">Version chargement...</footer>
@@ -33,6 +38,7 @@
 
     let streamId = getParam('stream');
     const output = document.getElementById('output');
+    const siteDisplay = document.getElementById('siteNameDisplay');
 
     if (!streamId) {
       document.getElementById('start').onclick = () => {
@@ -45,6 +51,8 @@
       };
     } else {
       document.getElementById('site-form').style.display = 'none';
+      siteDisplay.textContent = "Site sélectionné : " + streamId;
+      siteDisplay.style.display = 'block';
       output.style.display = 'block';
 
       const ws = new WebSocket("wss://serial-stream.fdlsystemes.com");
@@ -55,8 +63,17 @@
       };
 
       ws.onmessage = (event) => {
-        output.textContent += event.data;
-        output.scrollTop = output.scrollHeight;
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === "line" && msg.streamId === streamId) {
+            // Affiche uniquement le contenu utile
+            output.textContent += msg.data;
+            output.scrollTop = output.scrollHeight;
+          }
+        } catch (e) {
+          // fallback si ce n’est pas du JSON
+          output.textContent += event.data + "\n";
+        }
       };
 
       ws.onerror = (err) => {
