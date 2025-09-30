@@ -31,11 +31,11 @@ jobs:
             mkdir -p public &&
             version=\$(git log -1 --date=short --format='%cd' 2>/dev/null || date +%F) &&
             echo "Version: \$version" &&
-            echo \$version > public/version.txt &&
             git config --global --add safe.directory /volume1/docker/serial-viewer &&
             git fetch origin &&
             git reset --hard origin/main &&
             git clean -fd &&
+            echo \$version > public/version.txt &&
             /usr/local/bin/docker-compose build &&
             /usr/local/bin/docker-compose up -d
           "
