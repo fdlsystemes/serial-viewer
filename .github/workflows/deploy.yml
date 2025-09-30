@@ -23,18 +23,13 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.NAS_SSH_PORT }} -H ${{ secrets.NAS_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Generate version.txt
-        run: |
-          mkdir -p serial-viewer/public
-          version=$(git log -1 --date=short --format="%cd")
-          echo "$version" > serial-viewer/public/version.txt
-          echo "Version générée: $version"
-
       - name: Rebuild & Restart serial-viewer container
         run: |
           ssh -p ${{ secrets.NAS_SSH_PORT }} ${{ secrets.NAS_USER }}@${{ secrets.NAS_HOST }} "
             set -e
             cd /volume1/docker/serial-viewer &&
+            version=\$(git log -1 --date=short --format='%cd' 2>/dev/null || date +%F) &&
+            echo \$version > public/version.txt &&
             git config --global --add safe.directory /volume1/docker/serial-viewer &&
             git fetch origin &&
             git reset --hard origin/main &&
