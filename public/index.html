@@ -8,23 +8,71 @@
     body { font-family: monospace; background: #f9f9f9; padding: 20px; }
     h1 { font-size: 1.2em; }
     #output { background: #eee; padding: 10px; border-radius: 5px; height: 400px; overflow-y: auto; }
+    footer { text-align:center; font-size:0.8em; color:#666; margin-top:20px; }
   </style>
 </head>
 <body>
   <h1>Flux série en temps réel</h1>
-  <pre id="output"></pre>
+
+  <!-- Formulaire choix site -->
+  <div id="site-form">
+    <label for="siteName">Nom du site :</label>
+    <input type="text" id="siteName" placeholder="ex: site-A" required />
+    <button id="start">Afficher</button>
+  </div>
+
+  <pre id="output" style="display:none;"></pre>
+
+  <footer id="version">Version chargement...</footer>
 
   <script>
-    const ws = new WebSocket("wss://serial-stream.fdlsystemes.com");
-    const output = document.getElementById("output");
+    function getParam(name) {
+      const u = new URL(location.href);
+      return u.searchParams.get(name);
+    }
 
-    ws.onopen = () => output.textContent += "[OK] Connecté au serveur WebSocket\n";
-    ws.onmessage = (event) => {
-      output.textContent += event.data;
-      output.scrollTop = output.scrollHeight;
-    };
-    ws.onerror = (err) => output.textContent += `[Erreur] ${err.message || 'inconnue'}\n`;
-    ws.onclose = () => output.textContent += "[Déconnecté]\n";
+    let streamId = getParam('stream');
+    const output = document.getElementById('output');
+
+    if (!streamId) {
+      document.getElementById('start').onclick = () => {
+        const val = document.getElementById('siteName').value.trim();
+        if (!val) {
+          alert("Veuillez entrer un nom de site !");
+          return;
+        }
+        location.href = "?stream=" + encodeURIComponent(val);
+      };
+    } else {
+      document.getElementById('site-form').style.display = 'none';
+      output.style.display = 'block';
+
+      const ws = new WebSocket("wss://serial-stream.fdlsystemes.com");
+
+      ws.onopen = () => {
+        output.textContent += "[OK] Connecté au serveur de données\n";
+        ws.send(JSON.stringify({ type: "join", streamId, role: "viewer" }));
+      };
+
+      ws.onmessage = (event) => {
+        output.textContent += event.data;
+        output.scrollTop = output.scrollHeight;
+      };
+
+      ws.onerror = (err) => {
+        output.textContent += `[ERREUR] Impossible d’accéder au serveur de données (${err.message || 'inconnue'})\n`;
+      };
+
+      ws.onclose = () => {
+        output.textContent += "[INFO] Déconnecté du serveur de données\n";
+      };
+    }
+
+    // Affiche la version depuis version.txt
+    fetch("version.txt")
+      .then(r => r.text())
+      .then(v => document.getElementById("version").textContent = "Version " + v.trim())
+      .catch(() => document.getElementById("version").textContent = "Version inconnue");
   </script>
 </body>
 </html>
